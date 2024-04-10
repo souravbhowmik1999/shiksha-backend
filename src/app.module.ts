@@ -29,6 +29,7 @@ import { FieldsModule } from "./fields/fields.module";
 import { AttendanceModule } from "./attendance/attendance.module";
 import { UserModule } from "./user/user.module";
 import { RbacModule } from "./rbac/rbac.module";
+import { ProgramModule } from './program/program.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { RbacModule } from "./rbac/rbac.module";
     FieldsModule,
     AuthModule,
     DatabaseModule,
+    ProgramModule,
   ],
   controllers: [AppController],
   providers: [AppService],
