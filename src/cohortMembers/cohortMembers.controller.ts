@@ -5,6 +5,7 @@ import {
   ApiCreatedResponse,
   ApiBasicAuth,
   ApiHeader,
+  ApiQuery,
 } from "@nestjs/swagger";
 import {
   Controller,
@@ -21,13 +22,14 @@ import {
   Headers,
   Res,
   UseGuards,
+  Query,
 } from "@nestjs/common";
 import { CohortMembersSearchDto } from "./dto/cohortMembers-search.dto";
 import { Request } from "@nestjs/common";
 import { CohortMembersDto } from "./dto/cohortMembers.dto";
 import { CohortMembersAdapter } from "./cohortMembersadapter";
 import { CohortMembersService } from "./cohortMember.service";
-import { Response } from "@nestjs/common";
+import { Response } from "express";
 import { CohortMembersUpdateDto } from "./dto/cohortMember-update.dto";
 import { JwtAuthGuard } from "src/common/guards/keycloak.guard";
 
@@ -69,33 +71,34 @@ export class CohortMembersController {
   }
 
   //get cohort members
-  @Get("/:id")
+  @Get("/:userId")
   @UseInterceptors(ClassSerializerInterceptor)
   @ApiBasicAuth("access-token")
   @ApiCreatedResponse({ description: "Cohort Members detail" })
   @ApiForbiddenResponse({ description: "Forbidden" })
-  @SerializeOptions({
-    strategy: "excludeAll",
-  })
-  @ApiHeader({
-    name: "tenantid",
-  })
+  @SerializeOptions({strategy: "excludeAll"})
+  @ApiHeader({name: "tenantid"})
+  @ApiQuery({ name: 'fieldvalue', description: 'The field Value (optional)', required: false })
   public async getCohortMembers(
     @Headers() headers,
-    @Param("id") cohortMembersId: string,
+    @Param("userId") userId: string,
     @Req() request: Request,
-    @Res() response: Response
+    @Res() response: Response,
+    @Query("fieldvalue") fieldvalue: string | null = null
   ) {
     let tenantid = headers["tenantid"];
-    return this.cohortMembersService.getCohortMembers(
+    // const result = await this.userAdapter.buildUserAdapter().createUser(request, userCreateDto);
+
+    const result = await this.cohortMembersService.getCohortMembers(
       tenantid,
-      cohortMembersId,
+      userId,
       response,
       request
     );
+    return response.status(result.statusCode).json(result);
   }
 
-  search;
+  // search
   @Post("/search")
   @ApiBasicAuth("access-token")
   @ApiCreatedResponse({ description: "Cohort Members list." })
