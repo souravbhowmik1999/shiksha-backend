@@ -119,4 +119,125 @@ export class PostgresAssignTenantService {
         }
     }
 
+    public async updateAssignTenant(mappingId:any, request: any, updateAssignTenantDto: CreateAssignTenantDto) {
+        try {
+            const checkExistData = await this.userTenantMappingRepository.find({
+                where:{ Id:mappingId }
+            })
+             
+            console.log(checkExistData);
+            
+            let userId = updateAssignTenantDto?.userId;
+            let tenantIds;
+            if (!updateAssignTenantDto.tenantId || !updateAssignTenantDto.userId) {
+                return new ErrorResponseTypeOrm({
+                    statusCode: HttpStatus.BAD_REQUEST,
+                    errorMessage: "Either tenantId or userId must be provided and not blank.",
+                });
+            }
+            if(updateAssignTenantDto.tenantId){
+                tenantIds = updateAssignTenantDto.tenantId;
+            }else{
+                tenantIds = checkExistData[0].tenantId;
+            }
+
+            if(updateAssignTenantDto.userId){
+                userId = updateAssignTenantDto.userId;
+            }else{
+                userId = checkExistData[0].userId;
+            }
+
+            // Check if tenant array is not empty
+            if (!tenantIds || tenantIds.length === 0) {
+                return new SuccessResponse({
+                    statusCode: HttpStatus.BAD_REQUEST,
+                    message: "Roles array cannot be empty.",
+                });
+            }
+            let result = [];
+            let errors = [];
+
+            for (const tenantId of tenantIds) {
+                // If role already exists for user, return error response
+                console.log(userId);
+                console.log(tenantId);
+
+                let findExistingRole = await this.userTenantMappingRepository.findOne({
+                    where: {
+                        userId: userId,
+                        tenantId: tenantId,
+                    },
+                });
+                if (findExistingRole) {
+                    errors.push({
+                        errorMessage: `User is already exist in ${tenantId} Tenant.`,
+                    });
+                    continue;
+                }
+
+                // User is exist in user table 
+                let userExist = await this.userRepository.findOne({
+                    where: {
+                        userId: userId,
+                    },
+                });
+                if (!userExist) {
+                    errors.push({
+                        errorMessage: `User ${userId} is not exist.`,
+                    });
+                    continue;
+                }
+
+                // User is exist in user table 
+                let tenantExist = await this.tenantsRepository.findOne({
+                    where: {
+                        tenantId: tenantId,
+                    },
+                });
+                if (!tenantExist) {
+                    errors.push({
+                        errorMessage: `Tenant ${tenantId} is not exist.`,
+                    });
+                    continue;
+                }
+
+
+                const data = await this.userTenantMappingRepository.save({
+                    userId: userId,
+                    tenantId: tenantId,
+                    createdBy: request['user'].userId,
+                    updatedBy: request['user'].userId
+                })
+
+                result.push(new ResponseAssignTenantDto(data, `Tenant assigned successfully to the user.`));
+            }
+
+            if (result.length == 0) {
+                return {
+                    statusCode: HttpStatus.BAD_REQUEST,
+                    errorCount: errors.length,
+                    errors,
+                };
+            }
+            return {
+                statusCode: HttpStatus.CREATED,
+                successCount: result.length,
+                errorCount: errors.length,
+                data: result,
+                errors,
+            };
+        } catch (error) {
+            if (error.code === '23503') {
+                return new ErrorResponseTypeOrm({
+                    statusCode: HttpStatus.NOT_FOUND,
+                    errorMessage: `User Id or Role Id Doesn't Exist in Database `
+                });
+            }
+            return new ErrorResponseTypeOrm({
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                errorMessage: JSON.stringify(error)
+            });
+        }
+    }
+
 }

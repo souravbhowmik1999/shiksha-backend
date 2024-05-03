@@ -13,7 +13,8 @@ export class HasuraAssignTenantService {
         private userTenantMappingRepository: Repository<UserTenantMapping>,
 
     ) { }
-    public async createAssignTenant(request: any, createAssignTenantDto:CreateAssignTenantDto) {
-    }
+    public async createAssignTenant(request: any, createAssignTenantDto:CreateAssignTenantDto) {}
+
+    public async updateAssignTenant(mappingId: any, request:any ,updateAssignTenantDto: any){};
 
 }
