@@ -1,10 +1,29 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsBoolean, IsNumber, IsNumberString, IsObject, IsOptional, IsString } from "class-validator";
-import { CohortDto } from "./cohort.dto";
+import { IsBoolean, IsNotEmpty, IsNumber, IsObject, IsOptional, IsString, registerDecorator, ValidationOptions, ValidationArguments } from "class-validator";
 import { Expose } from "class-transformer";
 
+// Custom decorator to check if the object is not empty
+function IsNotEmptyObject(validationOptions?: ValidationOptions) {
+  return function (object: Object, propertyName: string) {
+    registerDecorator({
+      name: 'isNotEmptyObject',
+      target: object.constructor,
+      propertyName: propertyName,
+      options: validationOptions,
+      validator: {
+        validate(value: any, args: ValidationArguments) {
+          return value && Object.keys(value).length > 0;
+        },
+        defaultMessage(args: ValidationArguments) {
+          return `${args.property} should not be an empty object`;
+        },
+      },
+    });
+  };
+}
+
 export class setFilters {
-  //userIdBy
+  // userId
   @ApiProperty({
     type: String,
     description: "The cohort is createdBy",
@@ -15,7 +34,7 @@ export class setFilters {
   @IsString()
   userId?: string;
 
-  //userIdBy
+  // cohortId
   @ApiProperty({
     type: String,
     description: "The cohort is createdBy",
@@ -26,29 +45,7 @@ export class setFilters {
   @IsString()
   cohortId?: string;
 
-  //programId
-  @ApiPropertyOptional({
-    type: String,
-    description: "The programId of the cohort",
-    default: "",
-  })
-  @Expose()
-  @IsOptional()
-  @IsString()
-  programId?: string;
-
-  //parentId
-  @ApiPropertyOptional({
-    type: String,
-    description: "The parentId of the cohort",
-    default: "",
-  })
-  @Expose()
-  @IsOptional()
-  @IsString()
-  parentId?: string;
-
-  //name
+  // name
   @ApiProperty({
     type: String,
     description: "The name of the cohort",
@@ -58,50 +55,6 @@ export class setFilters {
   @IsOptional()
   @IsString()
   name?: string;
-
-  //type
-  @ApiProperty({
-    type: String,
-    description: "The type of the cohort",
-    default: "",
-  })
-  @Expose()
-  @IsOptional()
-  @IsString()
-  type?: string;
-
-  //status
-  @ApiPropertyOptional({
-    type: Boolean,
-    description: "The status of the cohort",
-    default: true,
-  })
-  @Expose()
-  @IsOptional()
-  @IsBoolean()
-  status?: boolean;
-
-  //createdBy
-  @ApiProperty({
-    type: String,
-    description: "The cohort is createdBy",
-    default: "",
-  })
-  @Expose()
-  @IsOptional()
-  @IsString()
-  createdBy?: string;
-
-  //updatedBy
-  @ApiProperty({
-    type: String,
-    description: "The cohort is updatedBy",
-    default: "",
-  })
-  @Expose()
-  @IsOptional()
-  @IsString()
-  updatedBy?: string;
 }
 
 export class CohortSearchDto {
@@ -124,6 +77,7 @@ export class CohortSearchDto {
     description: "Filters",
   })
   @IsObject()
+  @IsNotEmptyObject({ message: 'Filters should not be an empty object' })
   filters: setFilters;
 
   constructor(partial: Partial<CohortSearchDto>) {

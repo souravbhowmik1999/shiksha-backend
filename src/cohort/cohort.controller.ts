@@ -54,7 +54,7 @@ export class CohortController {
   //Get Cohort Details
   @Get("/:cohortId")
   @ApiBasicAuth("access-token")
-  @ApiOkResponse({ description: "Cohort detais Fetched Succcessfully" })
+  @ApiOkResponse({ description: "Cohort details Fetched Successfully" })
   @ApiNotFoundResponse({ description: "Cohort Not Found" })
   @ApiInternalServerErrorResponse({ description: "Internal Server Error." })
   @ApiBadRequestResponse({ description: "Bad Request" })
@@ -129,7 +129,6 @@ export class CohortController {
   @ApiOkResponse({ description: "Cohort list" })
   @ApiBadRequestResponse({ description: "Bad request." })
   @ApiInternalServerErrorResponse({ description: "Internal Server Error." })
-  // @UseInterceptors(ClassSerializerInterceptor)
   @UsePipes(new ValidationPipe())
   @SerializeOptions({
     strategy: "excludeAll",

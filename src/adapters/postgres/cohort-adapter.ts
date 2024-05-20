@@ -91,7 +91,7 @@ export class PostgresCohortService {
         const result = await this.getCohortDataWithCustomfield(cohortId);
         return new SuccessResponse({
           statusCode: HttpStatus.OK,
-          message: "Cohort detais fetched succcessfully.",
+          message: "Cohort details fetched successfully.",
           data: result,
         });
       } else {
@@ -483,9 +483,9 @@ export class PostgresCohortService {
         });
       }
 
-      const allowedKeys = ["userId", "cohortId", "programId", "parentId", "name", "type", "status", "createdBy", "updatedBy"];
+      const allowedKeys = ["userId", "cohortId", "name"];
       const whereClause = {};
-
+      
       if (filters && Object.keys(filters).length > 0) {
         Object.entries(filters).forEach(([key, value]) => {
           if (!allowedKeys.includes(key)) {
@@ -494,6 +494,12 @@ export class PostgresCohortService {
               errorMessage: `${key} Invalid key`,
             });
           } else {
+            if (value === '') {
+              throw new ErrorResponseTypeOrm({
+                statusCode: HttpStatus.BAD_REQUEST,
+                errorMessage: `Blank value for key '${key}'. Please provide a valid value.`,
+              });
+            }
             whereClause[key] = value;
           }
         });
@@ -539,7 +545,7 @@ export class PostgresCohortService {
       if (results.cohortDetails.length > 0) {
         return new SuccessResponse({
           statusCode: HttpStatus.OK,
-          message: 'Cohort detais fetched succcessfully',
+          message: 'Cohort details fetched successfully.',
           data: results,
         });
       } else {
@@ -548,8 +554,6 @@ export class PostgresCohortService {
           errorMessage: "No data found.",
         });
       }
-
-
 
     } catch (e) {
       if (e instanceof ErrorResponseTypeOrm) {
