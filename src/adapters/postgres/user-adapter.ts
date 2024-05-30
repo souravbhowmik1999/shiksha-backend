@@ -31,7 +31,7 @@ import { APIID } from 'src/common/utils/api-id.config';
 
 @Injectable()
 export class PostgresUserService {
-  axios = require("axios"); maskEmail
+  axios = require("axios");
 
   constructor(
     // private axiosInstance: AxiosInstance,
@@ -170,7 +170,6 @@ export class PostgresUserService {
       return await APIResponse.success(response, apiId, { ...result },
         HttpStatus.OK, 'User details Fetched Successfully.')
     } catch (e) {
-      ;
       return APIResponse.error(response, apiId, "Internal Server Error", "Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
